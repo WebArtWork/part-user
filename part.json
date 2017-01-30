@@ -1,0 +1,75 @@
+{
+	"name": "User",
+	"git": "git@github.com:WebArtWork/part-user.git",
+	"router": [{
+		"name": "Basic",
+		"src": "router.js"
+	}, {
+		"name": "Crud",
+		"src": "crud.js"
+	}],
+	"dependencies": {
+		"passport-vkontakte": "*",
+		"passport-instagram": "*",
+		"passport-facebook": "*",
+		"passport-twitter": "*",
+		"passport-local": "*",
+		"bcrypt-nodejs": "*",
+		"mongoose": "*",
+		"async": "*"
+	},
+	"services": [{
+		"id": "service_1478858326525",
+		"name": "MyUser"
+	}, {
+		"id": "service_1479391751929",
+		"name": "img"
+	}],
+	"filters": [{
+		"id": "filter_1478858456356",
+		"name": "dateWithAge"
+	}],
+	"directives": [{
+		"id": "directive_1479380583639",
+		"name": "stranger",
+		"themes": [{
+			"id": "theme_1479380583639",
+			"name": "default"
+		}]
+	}, {
+		"id": "directive_1479380627217",
+		"name": "friend",
+		"themes": [{
+			"id": "theme_1479380627217",
+			"name": "default"
+		}]
+	}, {
+		"id": "directive_1479381311217",
+		"name": "spinner",
+		"themes": [{
+			"id": "theme_1479381311217",
+			"name": "default"
+		}]
+	}, {
+		"id": "directive_1479389143137",
+		"name": "search",
+		"themes": [{
+			"id": "theme_1479389143137",
+			"name": "default"
+		}]
+	}, {
+		"id": "directive_1479392640404",
+		"name": "avatar",
+		"themes": [{
+			"id": "theme_1479392640405",
+			"name": "default"
+		}]
+	}, {
+		"id": "directive_1479395569709",
+		"name": "user",
+		"themes": [{
+			"id": "theme_1479395569709",
+			"name": "default"
+		}]
+	}]
+}
