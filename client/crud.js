@@ -1,22 +1,19 @@
 /*
-* Crud file for client side user
+*	Crud file for client side NAME
 */
-crudServices.User = function($http, $timeout, socket){
+crudServices.CNAME = function($http, $timeout, socket){
 	// Initialize
 	var srv = {},
 		updateTimeout;
 	// Routes
 		srv.update = function(obj, callback){
 			if(!obj) return;
-			var userUpdate = {
-				name: user.name
-			}
 			$timeout.cancel(updateTimeout);
-			$http.post('/api/user/update', userUpdate)
+			$http.post('/api/NAME/update', obj)
 			.then(function(){
 				if(typeof callback == 'function')
 					callback();
-				socket.emit('MineUserUpdated', userUpdate);
+				socket.emit('MineCNAMEUpdated', obj);
 			});		
 		}
 		srv.updateAfterWhile = function(obj){
@@ -27,16 +24,16 @@ crudServices.User = function($http, $timeout, socket){
 		}
 		srv.delete = function(obj, callback){
 			if(!obj) return;
-			$http.post('/api/user/delete', obj)
+			$http.post('/api/NAME/delete', obj)
 			.then(function(){
 				if(typeof callback == 'function')
 					callback();
-				socket.emit('MineUserDeleted', obj);
+				socket.emit('MineCNAMEDeleted', obj);
 			});
 		}
 		srv.logout = function(callback){
 			if(!obj) return;
-			$http.post('/api/user/logout')
+			$http.post('/api/NAME/logout')
 			.then(function(){
 				if(typeof callback == 'function')
 					callback();
@@ -44,42 +41,42 @@ crudServices.User = function($http, $timeout, socket){
 		}
 		srv.changePassword = function(oldPass, newPass){
 			if(!oldPass||!newPass) return;
-			$http.post('/api/user/changePassword',{
+			$http.post('/api/NAME/changePassword',{
 				oldPass: oldPass,
 				newPass: newPass
 			}).then(function(resp){
 				if(resp.data){
-					socket.emit('MineUserUpdated', {
+					socket.emit('MineCNAMEUpdated', {
 						logout: true
 					});
 				}
 			});
 		}
-		srv.addLocalAccount = function(user, email, pass){
+		srv.addLocalAccount = function(NAME, email, pass){
 			if(!email||!pass) return;
-			user.email = email;
-			$http.post('/api/user/addLocalAccount',{
+			NAME.email = email;
+			$http.post('/api/NAME/addLocalAccount',{
 				email: email,
 				password: pass
 			}).then(function(resp){
 				if(resp.data){
-					socket.emit('MineUserUpdated', {
+					socket.emit('MineCNAMEUpdated', {
 						email: email
 					});
 				}
 			});
 		}
-		srv.changeAvatar = function(user, dataUrl){
+		srv.changeAvatar = function(NAME, dataUrl){
 			$timeout(function(){
-				user.avatarUrl = dataUrl;
+				NAME.avatarUrl = dataUrl;
 			});
-			$http.post('/api/user/changeAvatar', {
+			$http.post('/api/NAME/changeAvatar', {
 				dataUrl: dataUrl
 			}).then(function(resp){
 				if(resp.data){							
 					$timeout(function(){
-						user.avatarUrl = resp.data;
-						socket.emit('MineUserUpdated', {
+						NAME.avatarUrl = resp.data;
+						socket.emit('MineCNAMEUpdated', {
 							avatarUrl: resp.data
 						});
 					});
@@ -87,15 +84,15 @@ crudServices.User = function($http, $timeout, socket){
 			});
 		}
 	// Sockets
-		socket.on('MineUserUpdated', function(user){
-			if(user.logout) return srv.logout(function(){
+		socket.on('MineCNAMEUpdated', function(NAME){
+			if(NAME.logout) return srv.logout(function(){
 				location.reload();
 			});
-			if(typeof srv.MineUserUpdated == 'function'){
-				srv.MineUserUpdated(user);
+			if(typeof srv.MineCNAMEUpdated == 'function'){
+				srv.MineCNAMEUpdated(NAME);
 			}
 		});
-		socket.on('MineUserDeleted', function(user){
+		socket.on('MineCNAMEDeleted', function(NAME){
 			srv.logout(function(){
 				location.reload();
 			});
@@ -103,3 +100,87 @@ crudServices.User = function($http, $timeout, socket){
 	// End of service
 	return srv;
 }
+/*
+*	img service.
+*/
+services.Image = function($http){
+	"ngInject";
+	var obj = {};
+	obj.resizeUpTo = function(info, callback){
+		if(!info.file) return console.log('No image');
+		info.width = info.width || 1920;
+		info.height = info.height || 1080;
+		if(info.file.type!="image/jpeg" && info.file.type!="image/png")
+			return console.log("You must upload file only JPEG or PNG format.");
+		var reader = new FileReader();
+		reader.onload = function (loadEvent) {
+			var ratioToFloat = function(val) {
+				var r = val.toString(),
+					xIndex = r.search(/[x:]/i);
+				if (xIndex > -1) {
+					r = parseFloat(r.substring(0, xIndex)) / parseFloat(r.substring(xIndex + 1));
+				} else {
+					r = parseFloat(r);
+				}
+				return r;
+			};
+			var canvasElement = document.createElement('canvas');
+			var imageElement = document.createElement('img');
+			imageElement.onload = function() {
+				var ratioFloat = ratioToFloat(info.width/info.height);
+				var imgRatio = imageElement.width / imageElement.height;
+				if (imgRatio < ratioFloat) {
+					width = info.width;
+					height = width / imgRatio;
+				} else {
+					height = info.height;
+					width = height * imgRatio;
+				}
+				canvasElement.width = width;
+				canvasElement.height = height;
+				var context = canvasElement.getContext('2d');
+				context.drawImage(imageElement, 0, 0 , width, height);
+				callback(canvasElement.toDataURL('image/png', 1));
+			};
+			imageElement.src = loadEvent.target.result;
+		};
+		reader.readAsDataURL(info.file);
+	}
+	return obj;
+};
+/*
+*	MyCNAME service. Crud is required.
+*/
+services.MyCNAME = function(CNAME, $http, $timeout){
+	"ngInject";
+	CNAME.done = false;
+	$http.get('/api/NAME/myCNAME')
+	.then(function(resp){
+		obj.done = true;
+		obj.auth = resp.data.auth;
+		obj.NAMEs = resp.data.NAMEs;
+		if(obj.selectedUserCode) obj.selectUser(obj.selectedUserCode);
+		if(obj.auth){
+			obj.isAdmin = resp.data.isAdmin;
+			obj.email = resp.data.email;
+			obj.twitter = resp.data.twitter;
+			obj.name = resp.data.name;
+			obj.avatarUrl = resp.data.avatarUrl;
+		}
+	});
+	obj.selectUser = function(code){
+		obj.selectedUserCode = code;
+		if(obj.NAMEs){
+			for (var i = 0; i < obj.NAMEs.length; i++) {
+				if(obj.NAMEs[i].userUrl==code||obj.NAMEs[i]._id==code){
+					return obj.NAMESelected = obj.NAMEs[i];
+				}
+			}
+		}
+	}
+	console.log(obj);
+	return obj;
+};
+/*
+*	End for User Crud.
+*/

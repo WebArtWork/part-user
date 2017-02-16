@@ -1,6 +1,6 @@
 ## REST API
 
 ### /update
-Update the User, post User object.
+Update the CNAME, post CNAME object.
 ### /remove
-Remove the User if user is author
+Remove the CNAME if NAME is author
