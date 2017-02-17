@@ -11,6 +11,8 @@
 		"src": "auth.js"
 	}],
 	"dependencies": {
+		"passport-odnoklassniki": "*",
+		"passport-google-oauth": "*",
 		"passport-vkontakte": "*",
 		"passport-instagram": "*",
 		"passport-facebook": "*",
