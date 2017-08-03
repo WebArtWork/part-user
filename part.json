@@ -1,19 +1,14 @@
 {
-	"name": "CNAME",
+	"name": "User",
 	"router": [{
 		"name": "Basic",
 		"src": "router.js"
-	}, {
-		"name": "Crud",
-		"src": "crud.js"
 	}, {
 		"name": "Auth",
 		"src": "auth.js"
 	}],
 	"dependencies": {
-		"passport-odnoklassniki": "*",
 		"passport-google-oauth": "*",
-		"passport-vkontakte": "*",
 		"passport-instagram": "*",
 		"passport-facebook": "*",
 		"passport-twitter": "*",
