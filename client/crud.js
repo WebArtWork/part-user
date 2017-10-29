@@ -1,75 +1,85 @@
+
 /*
 *	Crud file for client side user
 */
-crudServices.User = function($http, $timeout, socket){
+services.User = function($http, $timeout){
 	// Initialize
-		var srv = {};
+		var self = this, updateTimeout;
+		$http.get('/api/user/get').then(function(resp){
+			self.avatarUrl = resp.data.avatarUrl;
+			self.skills = resp.data.skills;
+			self.followings = resp.data.followings;
+			self.followers = resp.data.followers;
+			self.gender = resp.data.gender;
+			self.name = resp.data.name;
+			self.birth = resp.data.birth;
+			self.date = resp.data.date;
+			self._id = resp.data._id;
+			$http.get('/api/user/users').then(function(resp){
+				self.users = resp.data.users;
+			});
+		});
+	// Skills
+		var enum = [];
+		this.addSkill = function(skill){
+
+			self.update();
+		}
+		this.removeSkill = function(skill){
+
+			self.update();
+		}
+	// Followings
+		this.addFollowiner = function(user){
+
+			self.update();
+		}
+		this.removeFollowiner = function(user){
+
+			self.update();
+		}
+	// Followers
+		this.addFollower = function(user){
+
+			self.update();
+		}
+		this.removeFollower = function(user){
+
+			self.update();
+		}
 	// Routes
-		srv.update = function(obj, callback){
-			if(!obj) return;
-			$timeout.cancel(obj.updateTimeout);
-			$http.post('/api/user/update', obj)
-			.then(function(){
-				if(typeof callback == 'function')
-					callback();
+		this.update = function(){
+			$timeout.cancel(updateTimeout);
+			$http.post('/api/user/update', {
+				avatarUrl: self.avatarUrl,
+				skills: self.skills,
+				followings: self.followings,
+				followers: self.followers,
+				gender: self.gender,
+				name: self.name,
+				birth: self.birth,
+				date: self.date,
+				_id: self._id
 			});
 		}
-		srv.updateAfterWhile = function(obj){
-			$timeout.cancel(obj.updateTimeout);
-			obj.updateTimeout = $timeout(function(){
-				srv.update(obj);
-			}, 1000);
+		this.updateAfterWhile = function(){
+			$timeout.cancel(updateTimeout);
+			obj.updateTimeout = $timeout(self.update, 1000);
 		}
-		srv.delete = function(obj, callback){
-			if(!obj) return;
-			$http.post('/api/user/delete', obj)
-			.then(function(){
-				if(typeof callback == 'function')
-					callback();
-				socket.emit('MineUserDeleted', obj);
+		this.delete = function(){
+			$http.post('/api/user/delete', {
+				_id: self._id
 			});
 		}
-		srv.logout = function(callback){
-			if(!obj) return;
-			$http.post('/api/user/logout')
-			.then(function(){
-				if(typeof callback == 'function')
-					callback();
-			});
-		}
-		srv.changePassword = function(oldPass, newPass){
+		this.changePassword = function(oldPass, newPass){
 			if(!oldPass||!newPass) return;
 			$http.post('/api/user/changePassword',{
 				oldPass: oldPass,
 				newPass: newPass
-			}).then(function(resp){
-				if(resp.data){
-					socket.emit('MineUserUpdated', {
-						logout: true
-					});
-				}
-			});
-		}
-		srv.changeAvatar = function(user, dataUrl){
-			$timeout(function(){
-				user.avatarUrl = dataUrl;
-			});
-			$http.post('/api/user/changeAvatar', {
-				dataUrl: dataUrl
-			}).then(function(resp){
-				if(resp.data){							
-					$timeout(function(){
-						user.avatarUrl = resp.data;
-						socket.emit('MineUserUpdated', {
-							avatarUrl: resp.data
-						});
-					});
-				}
 			});
 		}
 	// End of service
-	return srv;
 }
 /*
 *	End for User Crud.
-*/
+*/

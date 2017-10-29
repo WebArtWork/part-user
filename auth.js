@@ -1,11 +1,76 @@
-var LocalStrategy = require('passport-local').Strategy;
 var User = require(__dirname+'/schema.js');
+var mongoose = require('mongoose');
 module.exports = function(sd) {
-	var router = sd._initRouter('/api/user');
-	router.get('/logout', function(req, res) {
-		req.logout();
-		res.redirect(sd.config.passport.local.successRedirect);
-	});
+	/*
+	*	Initialize User and Mongoose
+	*/
+		var router = sd._initRouter('/api/user');
+		if(mongoose.connection.readyState==0){
+			mongoose.connect(sd._mongoUrl, {
+				useMongoClient: true
+			});
+			mongoose.Promise = global.Promise;
+		}
+		sd.User = User;
+		sd._passport.serializeUser(function(user, done) {
+			done(null, user.id);
+		});
+		sd._passport.deserializeUser(function(id, done) {
+			User.findById(id, function(err, user) {
+				done(err, user);
+			});
+		});
+		router.get('/logout', function(req, res) {
+			req.logout();
+			res.redirect(sd._config.passport.local.successRedirect);
+		});
+	// Local Routing
+		if(sd._config.passport.local){
+			var LocalStrategy = require('passport-local').Strategy;
+			router.post('/login', sd._passport.authenticate('local-login', {
+				successRedirect: sd._config.passport.local.successRedirect,
+				failureRedirect: sd._config.passport.local.failureRedirect
+			}));
+			sd._passport.use('local-login', new LocalStrategy({
+				usernameField : 'username',
+				passwordField : 'password',
+				passReqToCallback : true
+			}, function(req, username, password, done) {
+				User.findOne({
+					'email' :  username.toLowerCase()
+				}, function(err, user) {
+					if (err) return done(err);
+					if (!user) return done(null, false);
+					if (!user.validPassword(password)) return done(null, false);
+					return done(null, user);
+				});
+			}));
+			router.post('/signup', sd._passport.authenticate('local-signup', {
+				successRedirect: sd._config.passport.local.successRedirect,
+				failureRedirect: sd._config.passport.local.failureRedirect
+			}));
+			sd._passport.use('local-signup', new LocalStrategy({
+				usernameField : 'username',
+				passwordField : 'password',
+				passReqToCallback : true
+			}, function(req, username, password, done) {
+				User.findOne({
+					'email': username.toLowerCase()
+				},function(err, user) {
+					if (err) return done(err);
+					if (user) return done(null, false);
+					else {
+						var newUser = new User();
+						newUser.email = username.toLowerCase();
+						newUser.password = newUser.generateHash(password);
+						newUser.save(function(err) {
+							if (err) throw err;
+							return done(null, newUser);
+						});
+					}
+				});
+			}));
+		}
 	// Google
 		if (sd._config.passport.google) {
 			var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -141,60 +206,6 @@ module.exports = function(sd) {
 			}),function(req, res) {
 				res.redirect(sd._config.passport.twitter.successRedirect);
 			});
-		}
-	// Login
-		if(sd._config.passport.local){
-			router.post('/login', sd._passport.authenticate('local-login', {
-				successRedirect: sd._config.passport.local.successRedirect,
-				failureRedirect: sd._config.passport.local.failureRedirect
-			}));
-			sd._passport.use('local-login', new LocalStrategy({
-				usernameField : 'username',
-				passwordField : 'password',
-				passReqToCallback : true
-			}, function(req, username, password, done) {
-				User.findOne({
-					'username' :  username.toLowerCase()
-				}, function(err, user) {
-					if (err) return done(err);
-					if (!user) return done(null, false);
-					if (!user.validPassword(password)) return done(null, false);
-					return done(null, user);
-				});
-			}));
-		}
-	// Sign up
-		if(sd._config.passport.local){
-			router.post('/signup', sd._passport.authenticate('local-signup', {
-				successRedirect: sd._config.passport.local.successRedirect,
-				failureRedirect: sd._config.passport.local.failureRedirect
-			}));
-			sd._passport.use('local-signup', new LocalStrategy({
-				usernameField : 'username',
-				passwordField : 'password',
-				passReqToCallback : true
-			}, function(req, username, password, done) {
-				User.findOne({
-					'username':username.toLowerCase()
-				},function(err, user) {
-					if (err) return done(err);
-					if (user) return done(null, false);
-					else {
-						var newUser = new User();
-						newUser.lists = req.session.lists;
-						newUser.links = req.session.links;
-						newUser.username = username.toLowerCase();
-						newUser.fullName = req.body.fullName;
-						newUser.email = req.body.email;
-						newUser.password = newUser.generateHash(password);
-						newUser.profileUrl = 'id'+Date.now();
-						newUser.save(function(err) {
-							if (err) throw err;
-							return done(null, newUser);
-						});
-					}
-				});
-			}));
 		}
 	// End of Crud
 };

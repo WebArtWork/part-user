@@ -1,11 +1,17 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 var schema = mongoose.Schema({
-	friends: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-	avatarUrl: {type: String, default: '/api/user/default.jpg'},
-	username: {type: String, unique: true},
-	password: {type: String},
-	name: {type: String}
+		email: {type: String, unique: true},
+		password: {type: String},
+		isAdmin: {type: Boolean, default: false},
+		avatarUrl: {type: String, default: '/api/user/default.jpg'},
+	skills: [{type: String, enum: ['cooking','fishing','painting']}],
+	followings: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+	followers: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+	gender: {type: Boolean},
+	name: {type: String},
+	birth: {type: Date},
+	data: {}
 });
 schema.methods.generateHash = function(password) {
 	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
