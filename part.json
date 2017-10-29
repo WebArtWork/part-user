@@ -8,10 +8,10 @@
 		"src": "auth.js"
 	}],
 	"dependencies": {
-		"passport-google-oauth": "*",
-		"passport-instagram": "*",
-		"passport-facebook": "*",
-		"passport-twitter": "*",
+			"passport-google-oauth": "*",
+			"passport-instagram": "*",
+			"passport-facebook": "*",
+			"passport-twitter": "*",
 		"passport-local": "*",
 		"bcrypt-nodejs": "*",
 		"mongoose": "*",

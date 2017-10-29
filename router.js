@@ -47,6 +47,7 @@ module.exports = function(sd) {
 				_id: req.body._id
 			}, function(err, doc) {
 				if (err || !doc) return res.json(false);
+				doc.isAdmin = req.body.isAdmin;
 				updateUser(doc, req.body, function(){
 					res.json(true);
 				});
@@ -70,9 +71,7 @@ module.exports = function(sd) {
 	// User Routes
 		router.get("/users", sd._ensure, function(req, res) {
 			User.find({
-				_id: {
-					$not: req.user._id
-				}
+				_id: {$ne: req.user._id}
 			}).select('avatarUrl skills gender name birth').exec(function(err, users){
 				res.json(users||[]);
 			});
