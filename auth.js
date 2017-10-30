@@ -11,7 +11,6 @@ module.exports = function(sd) {
 			});
 			mongoose.Promise = global.Promise;
 		}
-		sd.User = User;
 		sd._passport.serializeUser(function(user, done) {
 			done(null, user.id);
 		});
