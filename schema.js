@@ -4,7 +4,7 @@ var schema = mongoose.Schema({
 		email: {type: String, unique: true},
 		password: {type: String},
 		isAdmin: {type: Boolean, default: false},
-		avatarUrl: {type: String, default: '/api/user/default.jpg'},
+		avatarUrl: {type: String, default: '/api/user/default.png'},
 	skills: [{type: String, enum: ['cooking','fishing','painting']}],
 	followings: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
 	followers: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],

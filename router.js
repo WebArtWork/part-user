@@ -60,7 +60,7 @@ module.exports = function(sd) {
 				res.json(true);
 			});
 		});
-		router.post("/changePassword", sd._ensure, function(req, res) {
+		router.post("/admin/changePassword", sd._ensureAdmin, function(req, res) {
 			User.findOne({_id: req.body._id}, function(err, user){
 				user.password = user.generateHash(req.body.newPass);
 				user.save(function(){
@@ -69,14 +69,13 @@ module.exports = function(sd) {
 			});
 		});
 	// User Routes
-		router.get("/users", sd._ensure, function(req, res) {
+		router.get("/get", sd._ensure, function(req, res) {
 			User.find({
-				_id: {$ne: req.user._id}
 			}).select('avatarUrl skills gender name birth').exec(function(err, users){
 				res.json(users||[]);
 			});
 		});
-		router.get("/get", sd._ensure, function(req, res) {
+		router.get("/me", sd._ensure, function(req, res) {
 			res.json({
 				followings: req.user.followings,
 				followers: req.user.followers,
@@ -117,8 +116,8 @@ module.exports = function(sd) {
 		router.get("/avatar/:file", function(req, res) {
 			res.sendFile(__dirname + '/client/files/' + req.params.file);
 		});
-		router.get("/default.jpg", function(req, res) {
-			res.sendFile(__dirname + '/client/avatar.jpg');
+		router.get("/default.png", function(req, res) {
+			res.sendFile(__dirname + '/client/avatar.png');
 		});
 	// End of
 };

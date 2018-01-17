@@ -19,12 +19,12 @@ module.exports = function(sd) {
 				done(err, user);
 			});
 		});
-		router.get('/logout', function(req, res) {
-			req.logout();
-			res.redirect(sd._config.passport.local.successRedirect);
-		});
 	// Local Routing
 		if(sd._config.passport.local){
+			router.get('/logout', function(req, res) {
+				req.logout();
+				res.redirect(sd._config.passport.local.successRedirect);
+			});
 			var LocalStrategy = require('passport-local').Strategy;
 			router.post('/login', sd._passport.authenticate('local-login', {
 				successRedirect: sd._config.passport.local.successRedirect,

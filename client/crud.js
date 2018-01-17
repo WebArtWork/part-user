@@ -2,22 +2,16 @@
 /*
 *	Crud file for client side user
 */
-services.User = function($http, $timeout){
+crudServices.User = function($http, $timeout, mongo){
 	// Initialize
-		var self = this, updateTimeout;
-		$http.get('/api/user/get').then(function(resp){
-			self.avatarUrl = resp.data.avatarUrl;
-			self.skills = resp.data.skills;
-			self.followings = resp.data.followings;
-			self.followers = resp.data.followers;
-			self.gender = resp.data.gender;
-			self.name = resp.data.name;
-			self.birth = resp.data.birth;
-			self.date = resp.data.date;
-			self._id = resp.data._id;
-			$http.get('/api/user/users').then(function(resp){
-				self.users = resp.data.users;
-			});
+		var self = this, updateTimeout, fields=[];
+		$http.get('/api/user/me').then(function(resp){
+			if (!resp.data) return;
+			for (var key in resp.data) {
+				self[key] = resp.data[key];
+				fields.push(key);
+			}
+			self.users = mongo.get('user');
 		});
 	// Skills
 		var enum = [];
@@ -50,17 +44,11 @@ services.User = function($http, $timeout){
 	// Routes
 		this.update = function(){
 			$timeout.cancel(updateTimeout);
-			$http.post('/api/user/update', {
-				avatarUrl: self.avatarUrl,
-				skills: self.skills,
-				followings: self.followings,
-				followers: self.followers,
-				gender: self.gender,
-				name: self.name,
-				birth: self.birth,
-				date: self.date,
-				_id: self._id
-			});
+			var v = {};
+			for (var i = 0; i < fields.length; i++) {
+				v[fields[i]] = self[fields[i]];
+			}
+			$http.post('/api/user/update', v);
 		}
 		this.updateAfterWhile = function(){
 			$timeout.cancel(updateTimeout);
@@ -82,4 +70,4 @@ services.User = function($http, $timeout){
 }
 /*
 *	End for User Crud.
-*/
+*/
