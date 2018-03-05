@@ -1,7 +1,33 @@
 var User = require(__dirname+'/schema.js');
 module.exports = function(sd) {
-	// Initialize
-		var router = sd._initRouter('/api/user');
+	var router = sd._initRouter('/api/user');
+	let ensure_admin = sd.ensure_admin = function(req, res, next){
+		if(req.user&&req.user.is&&req.user.is.admin) next();
+		else res.send(false);
+	};
+	/*
+	*	waw crud : Get Configuration
+	*/
+		sd['query_get_user'] = function(){return {}};
+		sd['select_get_user'] = function(){return 'avatarUrl skills gender name birth'};
+		sd['query_get_user_admin'] = function(){return {}};
+		sd['select_get_user_admin'] = function(){return '-password'};
+	/*
+	*	waw crud : Update Configuration
+	*/
+
+
+		/*
+		router.post("/update", sd._ensure, function(req, res) {
+			User.findOne({
+				_id: req.user._id
+			}, function(err, doc) {
+				if (err || !doc) return res.json(false);
+				updateUser(doc, req.body, function(){
+					res.json(req.body);
+				});
+			});
+		});
 		var updateUser = function(user, newUser, cb){
 			user.skills = newUser.skills;
 			user.gender = newUser.gender;
@@ -19,7 +45,6 @@ module.exports = function(sd) {
 				__dirname + '/client/files/', user._id + '.jpg', n);
 			}], cb);
 		}
-	// Admin Routes
 		sd._ensureAdmin = function(req, res, next){
 			if(req.user&&req.user.isAdmin) next();
 			else res.json(false);
@@ -53,28 +78,27 @@ module.exports = function(sd) {
 				});
 			});
 		});
-		router.post("/admin/delete", sd._ensureAdmin, function(req, res) {
-			User.remove({
+		*/
+	/*
+	*	waw crud : Delete Configuration
+	*/
+		sd['ensure_delete_user_admin'] = ensure_admin;
+		sd['query_delete_user_admin'] = function(req, res, next){
+			return {
 				_id: req.body._id
-			}, function(){
-				res.json(true);
-			});
-		});
-		router.post("/admin/changePassword", sd._ensureAdmin, function(req, res) {
-			User.findOne({_id: req.body._id}, function(err, user){
-				user.password = user.generateHash(req.body.newPass);
-				user.save(function(){
-					res.json(true);
-				});
-			});
-		});
-	// User Routes
-		router.get("/get", sd._ensure, function(req, res) {
-			User.find({
-			}).select('avatarUrl skills gender name birth').exec(function(err, users){
-				res.json(users||[]);
-			});
-		});
+			}
+		};
+		sd['query_delete_user'] = function(req, res, next){
+			return {
+				_id: req.user._id
+			}
+		};
+		sd['files_to_remove_delete_user'] = function(req, res, next){
+			return __dirname+'/files/'+req.user._id;
+		};
+	/*
+	*	Custom Routes Management
+	*/
 		router.get("/me", sd._ensure, function(req, res) {
 			res.json({
 				followings: req.user.followings,
@@ -88,23 +112,6 @@ module.exports = function(sd) {
 				_id: req.user._id
 			});
 		});
-		router.post("/update", sd._ensure, function(req, res) {
-			User.findOne({
-				_id: req.user._id
-			}, function(err, doc) {
-				if (err || !doc) return res.json(false);
-				updateUser(doc, req.body, function(){
-					res.json(req.body);
-				});
-			});
-		});
-		router.post("/delete", sd._ensure, function(req, res) {
-			User.remove({
-				_id: req.user._id
-			}, function(){
-				res.json(true);
-			});
-		});
 		router.post("/changePassword", sd._ensure, function(req, res) {
 			if (!req.user.validPassword(req.body.oldPass)){
 				req.user.password = req.user.generateHash(req.body.newPass);
@@ -113,11 +120,19 @@ module.exports = function(sd) {
 				});
 			}else res.json(false);
 		});
+		router.post("/admin/changePassword", ensure_admin, function(req, res) {
+			User.findOne({_id: req.body._id}, function(err, user){
+				user.password = user.generateHash(req.body.newPass);
+				user.save(function(){
+					res.json(true);
+				});
+			});
+		});
 		router.get("/avatar/:file", function(req, res) {
-			res.sendFile(__dirname + '/client/files/' + req.params.file);
+			res.sendFile(__dirname + '/files/' + req.params.file);
 		});
 		router.get("/default.png", function(req, res) {
-			res.sendFile(__dirname + '/client/avatar.png');
+			res.sendFile(__dirname + '/files/avatar.png');
 		});
 	// End of
 };
