@@ -10,75 +10,23 @@ module.exports = function(sd) {
 	*/
 		sd['query_get_user'] = function(){return {}};
 		sd['select_get_user'] = function(){return 'avatarUrl skills gender name birth'};
+		sd['ensure_get_user_admin'] = ensure_admin;
 		sd['query_get_user_admin'] = function(){return {}};
 		sd['select_get_user_admin'] = function(){return '-password'};
 	/*
 	*	waw crud : Update Configuration
 	*/
-
-
-		/*
-		router.post("/update", sd._ensure, function(req, res) {
-			User.findOne({
-				_id: req.user._id
-			}, function(err, doc) {
-				if (err || !doc) return res.json(false);
-				updateUser(doc, req.body, function(){
-					res.json(req.body);
-				});
-			});
-		});
-		var updateUser = function(user, newUser, cb){
-			user.skills = newUser.skills;
-			user.gender = newUser.gender;
-			user.name = newUser.name;
-			user.birth = newUser.birth;
-			user.data = newUser.data;
-			if(newUser.avatarUrl.length>100){
-				user.avatarUrl = '/api/user/avatar/' + user._id + '.jpg?' + Date.now();
-			}
-			sd._parallel([function(n){
-				user.save(n);
-			}, function(n){
-				if(!newUser.avatarUrl||newUser.avatarUrl.length<100) return n();
-				sd._dataUrlToLocation(newUser.avatarUrl,
-				__dirname + '/client/files/', user._id + '.jpg', n);
-			}], cb);
-		}
-		sd._ensureAdmin = function(req, res, next){
-			if(req.user&&req.user.isAdmin) next();
-			else res.json(false);
-		}
-		router.get("/admin/users", sd._ensureAdmin, function(req, res) {
-			User.find({}).select('-password').populate([{
-				path: 'followings'
-			},{
-				path: 'followers'				
-			}]).exec(function(err, users){
-				res.json(users||[]);
-			});
-		});
-		router.post("/admin/create", sd._ensureAdmin, function(req, res) {
-			var newUser = new User();
-			newUser.email = req.body.email.toLowerCase();
-			newUser.password = newUser.generateHash(req.body.password);
-			newUser.save(function(err) {
-				if (err) return res.json(false);
-				res.json(newUser);
-			});
-		});
-		router.post("/admin/update", sd._ensureAdmin, function(req, res) {
-			User.findOne({
+		sd['ensure_update_all_user_admin'] = ensure_admin;
+		sd['query_update_all_user_admin'] = function(req, res, next) {
+			return {
 				_id: req.body._id
-			}, function(err, doc) {
-				if (err || !doc) return res.json(false);
-				doc.isAdmin = req.body.isAdmin;
-				updateUser(doc, req.body, function(){
-					res.json(true);
-				});
-			});
-		});
-		*/
+			}
+		};
+		sd['query_update_all_user'] = function(req, res, next) {
+			return {
+				_id: req.user._id
+			}
+		};
 	/*
 	*	waw crud : Delete Configuration
 	*/
@@ -109,7 +57,8 @@ module.exports = function(sd) {
 				birth: req.user.birth,
 				name: req.user.name,
 				date: req.user.date,
-				_id: req.user._id
+				_id: req.user._id,
+				is: req.user.is
 			});
 		});
 		router.post("/changePassword", sd._ensure, function(req, res) {
@@ -126,6 +75,20 @@ module.exports = function(sd) {
 				user.save(function(){
 					res.json(true);
 				});
+			});
+		});
+	/*
+	*	Avatar Management
+	*/
+		router.post("/avatar", function(req, res) {
+			req.user.avatarUrl = '/api/user/avatar/' + req.user._id + '.jpg?' + Date.now();
+			sd._parallel([function(n){
+				req.user.save(n);
+			}, function(n){
+				sd._dataUrlToLocation(req.body.dataUrl,
+					__dirname + '/files/', req.user._id + '.jpg', n);
+			}], function(){
+				res.json(req.user.avatarUrl);
 			});
 		});
 		router.get("/avatar/:file", function(req, res) {
