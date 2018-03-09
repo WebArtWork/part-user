@@ -10,8 +10,14 @@
 	"crud": {
 		"get": ["admin"],
 		"updatesAll": [{
-			"keys": ["gender","name","birth","skills","followings","followers","data"],
+			"keys": ["gender","name","birth","skills","data"],
 			"name": ""
+		},{
+			"keys": ["gender","name","birth","skills","data","kind"],
+			"name": "admin"
+		},{
+			"keys": ["gender","name","birth","skills","data","is","kind","architect"],
+			"name": "super"
 		}],
 		"updates": [],
 		"deletes": ["admin"],
@@ -21,6 +27,7 @@
 		}]
 	},
 	"dependencies": {
+		"express-recaptcha": "*",
 		"passport-local": "*",
 		"bcrypt-nodejs": "*",
 		"mongoose": "*"
