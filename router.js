@@ -13,7 +13,7 @@ module.exports = function(sd) {
 	*	waw crud : Get Configuration
 	*/
 		sd['query_get_user'] = function(){return {}};
-		sd['select_get_user'] = function(){return 'avatarUrl skills gender name birth'};
+		sd['select_get_user'] = function(){return 'avatarUrl skills gender name birth username'};
 		sd['ensure_get_user_admin'] = ensure_admin;
 		sd['query_get_user_admin'] = function(){return {}};
 		sd['select_get_user_admin'] = function(){return '-password'};
