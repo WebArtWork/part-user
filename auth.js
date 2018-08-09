@@ -1,6 +1,6 @@
 var User = require(__dirname+'/schema.js');
 var mongoose = require('mongoose');
-var Recaptcha = require('express-recaptcha');
+var Recaptcha = require('express-recaptcha').Recaptcha;
 var recaptcha = new Recaptcha('6Lf4nUsUAAAAAMtjSbr2Nfj0iDrc3RSlkEzepIcN', '6Lf4nUsUAAAAANR6Vmkafh82L2Gf08AREuRicHS7');
 module.exports = function(sd) {
 	/*
