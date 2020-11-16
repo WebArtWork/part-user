@@ -1,30 +1,26 @@
 const User = require(__dirname+'/schema.js');
 const mongoose = require('mongoose');
 const passport = require('passport');
-const nodemailer = require('nodemailer');
-const nodemailerSendgrid = require('nodemailer-sendgrid');
 module.exports = function(waw) {
-	if(waw.config.sendgrid){
-		const transport = nodemailer.createTransport( nodemailerSendgrid({
-			apiKey: waw.config.sendgrid
-		}));
-		waw.send = function(params, cb = ()=>{} ){
-			transport.sendMail({
-				from: 'support@webart.work',
-				to: '<' + params.to + '>',
-				subject: params.title || waw.config.name,
-				html: params.html
-			}).then(cb).catch(err => {
-				console.log('Errors occurred, failed to deliver message');
-				if (err.response && err.response.body && err.response.body.errors) {
-					err.response.body.errors.forEach(error => console.log('%s: %s', error.field, error.message));
-				} else {
-					console.log(err);
-				}
-			});
+	if(waw.config.mail){
+		const nodemailer = require("nodemailer");
+		let transporter = nodemailer.createTransport({
+			host: waw.config.mail.host,
+			port: waw.config.mail.port,
+			secure: waw.config.mail.secure,
+			auth: waw.config.mail.auth
+		});
+		waw.send = (opts, cb=resp=>{})=>{
+			transporter.sendMail({
+				from: waw.config.mail.from,
+				subject: opts.subject || waw.config.mail.subject,
+				to: opts.to,
+				text: opts.text,
+				html: opts.html
+			}, cb);
 		}
 	}else{
-		waw.send = function(params, cb = ()=>{} ){}
+		waw.send = ()=>{}
 	}
 	waw.use(passport.initialize());
 	waw.use(passport.session());
@@ -100,7 +96,7 @@ module.exports = function(waw) {
 						if (err) throw err;
 						waw.send({
 							to: user.email,
-							title: 'Code: '+user.resetPin,
+							subject: 'Code: '+user.resetPin,
 							html: 'Code: '+user.resetPin
 						}, function(){
 							res.json(true);
